@@ -1,0 +1,102 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<script type="text/javascript" src="/assets/script/canvasjs.min.js"></script>
+	<script type="text/javascript">
+		var dataPoints = [];
+		var flowPoints = [];
+		
+		window.onload = function () {
+			var chart = new CanvasJS.Chart("chartContainer",
+			{
+				animationEnabled: true,
+				theme: "theme4",
+				zoomEnabled: true,      
+				title:{
+					text: "Temperature Chart" 
+				},
+				axisX :{
+					labelAngle: 0
+				},
+				axisY:[{
+					title: "Water temperature [C]",
+					lineColor: "#C0504E",
+					tickColor: "#C0504E",
+					labelFontColor: "#C0504E",
+					titleFontColor: "#C0504E",
+					lineThickness: 2,
+          
+				},
+				{
+					title: "Flow [l/min]",
+					lineColor: "#4F81BC",
+					tickColor: "#4F81BC",
+					labelFontColor: "#4F81BC",
+					titleFontColor: "#4F81BC",
+					lineThickness: 2,
+				}],
+				legend: {
+					horizontalAlign: "right",
+					verticalAlign: "center"        
+				},
+				data: [
+				{
+					type: "spline",
+					axisYIndex: 1,
+					dataPoints: flowPoints
+				},
+				{
+					type: "spline",
+					dataPoints: dataPoints
+				}
+				]
+			});
+			chart.render();            
+		
+			function UpdateChart()
+			{	
+				var xhr = new XMLHttpRequest();
+				
+				xhr.onreadystatechange = function() {
+					if (xhr.readyState == 4)
+					{
+						//if (this.responseText == "") return;
+						var t = JSON.parse(this.responseText);
+	
+						t.forEach(function(temperature, i, t) {
+							y = parseFloat(t[i].temperature);
+							z = parseFloat(t[i].flow);
+							dateTime = new Date(t[i].time);
+							
+							dataPoints[i] = {         
+								x: dateTime,
+								y: y
+							};
+							
+							flowPoints[i] = {         
+								x: dateTime,
+								y: z
+							};
+						});					
+						chart.render();
+					}
+				}
+				
+				xhr.open("GET", '/get_temperature.php?device_id=2', true);
+				xhr.send();
+			}
+			
+			setInterval(UpdateChart, 100);
+		}
+	</script>
+    <style>
+      body {
+        margin: 0px;
+        padding: 0px;
+      }
+    </style>
+  </head>
+  <body>
+	<center><div id="chartContainer" style="height: 300px; width: 70%;"></center>
+  </body>
+</html> 

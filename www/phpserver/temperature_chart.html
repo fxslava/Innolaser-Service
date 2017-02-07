@@ -1,0 +1,66 @@
+<!DOCTYPE HTML>
+<html>
+  <head>	
+	<script>
+		function UpdateChart()
+		{	
+			var xhr = new XMLHttpRequest();
+			
+			xhr.onreadystatechange = function() {
+				if (xhr.readyState == 4)
+				{
+					if (this.responseText == "") return;
+					var t = JSON.parse(this.responseText);
+					
+					var canvas = document.getElementById('myCanvas');
+					var context = canvas.getContext('2d');
+					
+					var w = canvas.width - 10;
+					var h = canvas.height - 10;
+					
+					var dx = w / (Object.keys(t).length-1);
+					
+					var mint = 1000;
+					var maxt = 0;
+					
+					t.forEach(function(temperature, i, t) {
+						if (mint > t[i].temperature) mint = t[i].temperature; 
+						if (maxt < t[i].temperature) maxt = t[i].temperature;
+					});
+					
+					var dy = h / (maxt - mint);
+		
+					context.clearRect(0, 0, canvas.width, canvas.height);
+					
+					context.rect(10.5, 10.5, canvas.width-10.5, canvas.height-10.5);
+					context.strokeStyle = 'black';
+					context.lineWidth = 0.5;
+					context.stroke();
+			
+					context.beginPath();
+					t.forEach(function(temperature, i, t) {
+						context.lineTo(i * dx + 10.5, canvas.height - (t[i].temperature - mint) * dy + 10.5);
+					});
+					context.strokeStyle = 'red';
+					context.stroke();
+				}
+			}
+			
+			xhr.open("GET", '/get_temperature.php', true);
+			xhr.send();
+		}
+		
+		setInterval(UpdateChart, 100);
+	</script>
+    <style>
+      body {
+        margin: 0px;
+        padding: 0px;
+      }
+    </style>
+  </head>
+  <body>
+	<center><h3>График изменения температуры</h3></center>
+    <canvas id="myCanvas" width="512" height="256"></canvas>
+  </body>
+</html> 

@@ -1,0 +1,115 @@
+<!DOCTYPE HTML>
+<html>
+  <head>	
+	<script>
+		var time = 0;
+		var count = 10;
+		var points_count = 1000;
+		var period = 2000;
+		var data = [];
+		
+		function CircleXY(radius, phase)
+		{
+			var x = radius * Math.cos(phase);
+			var y = radius * Math.sin(phase);
+			
+			return {x : x, y : y};
+		}
+		
+		function Circles(centerx, centery, radius, t)
+		{
+			var cx = centerx;
+			var cy = centery;
+			
+			for (i = 0; i<count; i++)
+			{
+				r = radius / (i * 2 + 1);
+				
+				data[i] = {x : cx, y : cy, radius : r};
+				
+				phase = 2 * Math.PI * (i * 2 + 1) * t / period;
+				point = CircleXY(r, phase);
+				cx += point.x;
+				cy += point.y;
+			}
+		}
+		
+		function CirclesF(centery, radius, t, ph)
+		{
+			var cy = centery;
+			
+			for (i = 0; i<count-1; i++)
+			{
+				r = radius / (i * 2 + 1);
+				
+				phase = 2 * Math.PI * (i * 2 + 1) * (t / period + ph / points_count);
+				cy += r * Math.sin(phase);
+			}
+
+			return cy;
+		}
+		
+		function UpdateChart()
+		{			
+			time++;
+			
+			var canvas = document.getElementById('myCanvas');
+			var context = canvas.getContext('2d');
+			
+			var w = canvas.width;
+			var h = canvas.height;
+			
+			Circles(w/4.0, h/2.0, (4.0 / Math.PI) * h/5.0, time);
+		
+			context.clearRect(0, 0, canvas.width, canvas.height);
+			
+			for (var i = 0; i<count-1; i++)
+			{
+				context.beginPath();
+				context.moveTo(data[i].x, data[i].y);
+				context.lineTo(data[i+1].x, data[i+1].y);
+				context.strokeStyle = 'black';
+				context.lineWidth = 4 / (i + 1);
+				context.stroke();
+				context.closePath();
+				
+				context.beginPath();
+				context.arc(data[i].x, data[i].y, data[i].radius, 0.0, Math.PI * 2.0);
+				context.strokeStyle = 'black';
+				context.lineWidth = 2 / (i + 1);
+				context.stroke();
+				context.closePath();
+			}
+			
+			context.beginPath();
+			context.moveTo(data[count-1].x, data[count-1].y);
+			context.lineTo(w/2, data[count-1].y);
+			context.strokeStyle = 'black';
+			context.lineWidth = 0.1;
+			context.stroke();
+			
+			context.beginPath();
+			for (var i = 0; i<points_count-1; i++)
+			{
+				x = ((w * i) / (2 * points_count)) + w / 2;
+				y = CirclesF(h/2, (4.0 / Math.PI) * h/5.0, time, i);
+				context.lineTo(x, y);
+			}
+			context.strokeStyle = 'black';
+			context.lineWidth = 1.0;
+			context.stroke();
+		}
+		
+		setInterval(UpdateChart, 10);
+	</script>
+    <style>
+      body {
+        margin: 0px;
+        padding: 0px;
+      }
+    </style>
+  </head>
+  <body>
+    <center><canvas id="myCanvas" width="2048" height="1024"></canvas></center>
+  </body>
+</html> 
